@@ -12,7 +12,7 @@
 
 {% set uri_basename = salt['system.basename'](uri) -%}
 
-app-uri-file-{{ uri_basename }}:
+{{ app_name }}-app-uri-file-{{ uri_basename }}:
   file.managed:
     - name: {{ tmp_dir }}/{{ uri_basename  }}
     - source: {{ uri }}
@@ -25,7 +25,7 @@ app-uri-file-{{ uri_basename }}:
 {% set basepath = "hdfs://{0}{1}".format(nameservice, pillar['hdfs']['pkgs_path']) -%}
 {% set filepath = "{0}/{1}".format(basepath, uri_basename) -%}
 
-app-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}:
+{{ app_name }}-app-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}:
   cmd.wait:
     - name: |
         hadoop fs -mkdir -p {{ basepath }}
@@ -36,7 +36,7 @@ app-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}:
     - group: hdfs
     - timeout: 30
     - watch:
-      - file: app-uri-file-{{ uri_basename }}
+      - file: {{ app_name }}-app-uri-file-{{ uri_basename }}
 
 {% endfor %}
 
@@ -65,7 +65,7 @@ run-service-deploy-{{ app_name }}:
       {% for uri in uris -%}
       {% set uri_basename = salt['system.basename'](uri) -%}
       {% for nameservice in nameservice_names -%}
-      - cmd: app-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}
+      - cmd: {{ app_name }}-app-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}
       {% endfor %}
       {% endfor %}
 
@@ -90,7 +90,7 @@ run-service-restart-{{ app_name }}:
     - watch:
       {% for uri in uris -%}
       {% set uri_basename = salt['system.basename'](uri) -%}
-      - file: app-uri-file-{{ uri_basename }}
+      - file: {{ app_name }}-app-uri-file-{{ uri_basename }}
       {% endfor %}
     {% endif -%}
 
