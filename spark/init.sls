@@ -119,6 +119,17 @@ include:
       - archive: spark-pkg
       - file: spark-pkg-link
 
+{{ spark_home }}/sbin/run-mesos-shuffle-service.sh:
+  file.managed:
+    - source: salt://spark/files/run-mesos-shuffle-service.sh
+    - user: root
+    - group: root
+    - mode: 755
+    - template: jinja
+    - require:
+      - archive: spark-pkg
+      - file: spark-pkg-link
+
 sparksql-jdbc-jar-link:
   file.symlink:
     - name: {{ spark_home }}/lib/postgresql-jdbc.jar
@@ -128,3 +139,30 @@ sparksql-jdbc-jar-link:
       - archive: spark-pkg
       - file: spark-pkg-link
 
+/etc/init/mesos-shuffle-service.conf:
+  file.managed:
+    - source: salt://spark/files/mesos-shuffle-service.conf
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja
+    - context:
+        spark_home: {{ spark_home }}
+    - require:
+      - archive: spark-pkg
+      - file: spark-pkg-link
+      - file: {{ spark_home }}/sbin/run-mesos-shuffle-service.sh
+
+mesos-shuffle-service:
+  service:
+    - running
+    - name: mesos-shuffle-service
+    - enable: True
+    - require:
+      - archive: spark-pkg
+      - file: spark-pkg-link
+    - watch:
+        - file: {{ spark_home }}/conf/spark-defaults.conf
+        - file: {{ spark_home }}/conf/spark-env.sh
+        - file: {{ spark_home }}/sbin/run-mesos-shuffle-service.sh
+        - file: /etc/init/mesos-shuffle-service.conf

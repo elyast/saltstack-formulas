@@ -17,37 +17,20 @@
 # limitations under the License.
 #
 
+# Starts the Mesos external shuffle server on the machine this script is executed on.
+# The Mesos external shuffle service detects when an application exits and automatically
+# cleans up its shuffle files.
 #
-# Shell script for starting the Spark SQL Thrift server
-
-set -o posix
+# Usage: start-mesos-shuffle-server.sh
+#
+# Use the SPARK_SHUFFLE_OPTS environment variable to set shuffle service configuration.
+#
 
 if [ -z "${SPARK_HOME}" ]; then
   export SPARK_HOME="$(cd "`dirname "$0"`"/..; pwd)"
 fi
 
-CLASS="org.apache.spark.sql.hive.thriftserver.HiveThriftServer2"
+. "${SPARK_HOME}/sbin/spark-config.sh"
+. "${SPARK_HOME}/bin/load-spark-env.sh"
 
-function usage {
-  echo "Usage: ./sbin/start-thriftserver [options] [thrift server options]"
-  pattern="usage"
-  pattern+="\|Spark assembly has been built with Hive"
-  pattern+="\|NOTE: SPARK_PREPEND_CLASSES is set"
-  pattern+="\|Spark Command: "
-  pattern+="\|======="
-  pattern+="\|--help"
-
-  "${SPARK_HOME}"/bin/spark-submit --help 2>&1 | grep -v Usage 1>&2
-  echo
-  echo "Thrift server options:"
-  "${SPARK_HOME}"/bin/spark-class $CLASS --help 2>&1 | grep -v "$pattern" 1>&2
-}
-
-if [[ "$@" = *--help ]] || [[ "$@" = *-h ]]; then
-  usage
-  exit 0
-fi
-
-export SUBMIT_USAGE_FUNCTION=usage
-
-"${SPARK_HOME}"/bin/spark-submit --class $CLASS 1 "$@"
+"${SPARK_HOME}"/bin/spark-class start org.apache.spark.deploy.mesos.MesosExternalShuffleService

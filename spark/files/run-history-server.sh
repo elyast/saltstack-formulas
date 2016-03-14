@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
-sbin=`dirname "$0"`
-sbin=`cd "$sbin"; pwd`
+if [ -z "${SPARK_HOME}" ]; then
+  export SPARK_HOME="$(cd "`dirname "$0"`"/..; pwd)"
+fi
 
-. "$sbin/spark-config.sh"
-. "$SPARK_PREFIX/bin/load-spark-env.sh"
+. "${SPARK_HOME}/sbin/spark-config.sh"
+. "${SPARK_HOME}/bin/load-spark-env.sh"
 
 export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS -Dspark.history.ui.port=$1"
 
-"$SPARK_PREFIX"/bin/spark-class org.apache.spark.deploy.history.HistoryServer
+"${SPARK_HOME}"/bin/spark-class org.apache.spark.deploy.history.HistoryServer
