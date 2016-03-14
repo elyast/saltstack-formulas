@@ -33,4 +33,4 @@ fi
 . "${SPARK_HOME}/sbin/spark-config.sh"
 . "${SPARK_HOME}/bin/load-spark-env.sh"
 
-"${SPARK_HOME}"/bin/spark-class start org.apache.spark.deploy.mesos.MesosExternalShuffleService
+"${SPARK_HOME}"/bin/spark-class org.apache.spark.deploy.mesos.MesosExternalShuffleService
