@@ -56,21 +56,26 @@ def _process_broker_reconfiguration(config, address, index):
 def _remove_broker(address, index):
     response = dict()
     response['stop'] = _stop_broker(index, address)
-    response['remove'] = requests.get(url=address + '/api/brokers/remove', params={'id': index}).json()
+    response['remove'] = requests.get(url=address + '/api/broker/remove', params={'broker': index}).json()
     return response
 
 
 def _rebalance_brokers(address):
-    return requests.get(url=address + '/api/brokers/rebalance', params={'id': '*'}).json()
+    topics = requests.get(url=address + '/api/topic/list').json()['topics']
+    topicParam = ','.join(map(lambda x: x['name'], topics))
+    if len(topics) > 0:
+        return requests.get(url=address + '/api/topic/rebalance', params={'topic': topicParam}).json()
+    else:
+        return 'TopicList: ' + topicParam
 
 
 def _stop_broker(index, address):
-    r = requests.get(url=address + '/api/brokers/stop', params={'id': index})
+    r = requests.get(url=address + '/api/broker/stop', params={'broker': index})
     return r.json()
 
 
 def _start_broker(index, address):
-    r = requests.get(url=address + '/api/brokers/start', params={'id': index})
+    r = requests.get(url=address + '/api/broker/start', params={'broker': index})
     return r.json()
 
 
@@ -78,11 +83,11 @@ def _update_or_add_broker(index, config, address):
     response = {}
     payload = {}
     payload.update(dict(map(_format_nested_dicts, config.iteritems())))
-    payload.update({'id': index})
-    update_response = requests.get(url=address + '/api/brokers/update', params=payload)
+    payload.update({'broker': index})
+    update_response = requests.get(url=address + '/api/broker/update', params=payload)
     response['update'] = update_response.json()
     if update_response.status_code != 200:
-        add_response = requests.get(url=address + '/api/brokers/add', params=payload)
+        add_response = requests.get(url=address + '/api/broker/add', params=payload)
         response['add'] = add_response.json()
     return response
 
@@ -96,4 +101,4 @@ def _format_nested_dicts(option):
 
 
 def _get_broker_status(address):
-    return requests.get(url=address + '/api/brokers/status').json()['brokers']
+    return requests.get(url=address + '/api/broker/list').json()['brokers']
