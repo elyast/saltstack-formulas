@@ -16,7 +16,7 @@ def reconfigure(config, no_of_instances):
     :return:
     """
     log.warn('Config: ' + str(config))
-    scheduler_addr = __salt__['marathon_client.wait_for_healthy_api']('kafka-mesos', '/api/brokers/status')
+    scheduler_addr = __salt__['marathon_client.wait_for_healthy_api']('kafka-mesos', '/health')
     if scheduler_addr is None:
         raise ValueError('Scheduler is not healthy')
     initial_no_of_instances = len(_get_broker_status(scheduler_addr))
