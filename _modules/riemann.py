@@ -25,10 +25,10 @@ def kafka_jmx_checks(my_host):
     if len(jmx_queries) == 0:
         return []
 
-    status_endpoint = __salt__['marathon_client.wait_for_healthy_api']('kafka-mesos', '/api/brokers/status')
+    status_endpoint = __salt__['marathon_client.wait_for_healthy_api']('kafka-mesos', '/api/broker/list')
     if status_endpoint is None:
         return []
-    r = requests.get(url=status_endpoint + '/api/brokers/status')
+    r = requests.get(url=status_endpoint + '/api/broker/list')
     if r.status_code != 200:
         return []
     kafka_meta = r.json()

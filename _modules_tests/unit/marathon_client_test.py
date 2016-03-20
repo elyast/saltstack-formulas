@@ -92,8 +92,8 @@ class TestingMarathonClientFunctions(unittest.TestCase):
                                 "ports": [19990],
                                 "stagedAt": "2015-08-26T20:23:39.463Z"}]}''',
                                content_type="application/json")
-        httpretty.register_uri(httpretty.GET, "http://localhost:19990/api/brokers/status", body='ok')
-        self.assertEqual(marathon_client.wait_for_healthy_api('kafka-mesos', '/api/brokers/status'),
+        httpretty.register_uri(httpretty.GET, "http://localhost:19990/api/broker/list", body='ok')
+        self.assertEqual(marathon_client.wait_for_healthy_api('kafka-mesos', '/api/broker/list'),
                          'http://localhost:19990')
 
     @httpretty.activate
