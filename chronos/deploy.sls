@@ -12,7 +12,7 @@
 
 {% set uri_basename = salt['system.basename'](uri) -%}
 
-job-uri-file-{{ uri_basename }}:
+{{ job_name }}-job-uri-file-{{ uri_basename }}:
   file.managed:
     - name: {{ tmp_dir }}/{{ uri_basename  }}
     - source: {{ uri }}
@@ -25,7 +25,7 @@ job-uri-file-{{ uri_basename }}:
 {% set basepath = "hdfs://{0}{1}".format(nameservice, pillar['hdfs']['pkgs_path']) -%}
 {% set filepath = "{0}/{1}".format(basepath, uri_basename) -%}
 
-job-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}:
+{{ job_name }}-job-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}:
   cmd.wait:
     - name: |
         hadoop fs -mkdir -p {{ basepath }}
@@ -36,7 +36,7 @@ job-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}:
     - group: hdfs
     - timeout: 30
     - watch:
-      - file: job-uri-file-{{ uri_basename }}
+      - file: {{ job_name }}-job-uri-file-{{ uri_basename }}
 
 {% endfor %}
 
@@ -65,7 +65,7 @@ run-job-deploy-{{ job_name }}:
       {% for uri in uris -%}
       {% set uri_basename = salt['system.basename'](uri) -%}
       {% for nameservice in nameservice_names -%}
-      - cmd: job-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}
+      - cmd: {{ job_name }}-job-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}
       {% endfor %}
       {% endfor %}
 
@@ -80,7 +80,7 @@ run-job-redeploy-{{ job_name }}:
       - file: job-config-file-{{ job_name }}
       {% for uri in uris -%}
       {% set uri_basename = salt['system.basename'](uri) -%}
-      - file: job-uri-file-{{ uri_basename }}
+      - file: {{ job_name }}-job-uri-file-{{ uri_basename }}
       {% endfor %}
 
 {%- endmacro %}
