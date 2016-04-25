@@ -77,14 +77,14 @@ def my_nameservice_peers():
     return [peer for peer in all_peers_including_me if peer != my_host]
 
 
-def map_uris(uris):
+def map_uris(app_name, uris):
     """Map URIs from external URI to HDFS
 
     :return:
     """
     pkgs_path = __pillar__['hdfs']['pkgs_path']
     ns = nameservice_names()
-    return map(lambda x:  'hdfs://{0}{1}/{2}'.format(ns[0], pkgs_path, __salt__['system.basename'](x)), uris)
+    return map(lambda x:  'hdfs://{0}{1}/{2}/{3}'.format(ns[0], pkgs_path, app_name, __salt__['system.basename'](x)), uris)
 
 
 def _leave_oldest_namenode_hosts(hosts_with_times):

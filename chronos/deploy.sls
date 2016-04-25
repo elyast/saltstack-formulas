@@ -14,23 +14,24 @@
 
 {{ job_name }}-job-uri-file-{{ uri_basename }}:
   file.managed:
-    - name: {{ tmp_dir }}/{{ uri_basename  }}
+    - name: {{ tmp_dir }}/{{ job_name }}/{{ uri_basename  }}
     - source: {{ uri }}
     - user: root
     - group: root
     - mode: 755
+    - makedirs: True
 
 {% for nameservice in nameservice_names %}
 
 {% set basepath = "hdfs://{0}{1}".format(nameservice, pillar['hdfs']['pkgs_path']) -%}
-{% set filepath = "{0}/{1}".format(basepath, uri_basename) -%}
+{% set filepath = "{0}/{1}/{2}".format(basepath, job_name, uri_basename) -%}
 
 {{ job_name }}-job-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}:
   cmd.wait:
     - name: |
-        hadoop fs -mkdir -p {{ basepath }}
-        hadoop fs -chmod -R 1777 {{ basepath }}
-        hadoop fs -copyFromLocal -f {{ tmp_dir }}/{{ uri_basename  }} {{ filepath }}
+        hadoop fs -mkdir -p {{ basepath }}/{{ job_name }}
+        hadoop fs -chmod -R 1777 {{ basepath }}/{{ job_name }}
+        hadoop fs -copyFromLocal -f {{ tmp_dir }}/{{ job_name }}/{{ uri_basename  }} {{ filepath }}
         hadoop fs -chmod -R 1777 {{ filepath }}
     - user: hdfs
     - group: hdfs
@@ -42,7 +43,7 @@
 
 {% endfor %}
 
-{% do job_merged.update({'uris': salt['hdfs.map_uris'](uris)}) -%}
+{% do job_merged.update({'uris': salt['hdfs.map_uris'](job_name, uris)}) -%}
 
 job-config-file-{{ job_name }}:
   file.managed:

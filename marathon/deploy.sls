@@ -14,23 +14,24 @@
 
 {{ app_name }}-app-uri-file-{{ uri_basename }}:
   file.managed:
-    - name: {{ tmp_dir }}/{{ uri_basename  }}
+    - name: {{ tmp_dir }}/{{ app_name }}/{{ uri_basename  }}
     - source: {{ uri }}
     - user: root
     - group: root
     - mode: 755
+    - makedirs: True
 
 {% for nameservice in nameservice_names %}
 
 {% set basepath = "hdfs://{0}{1}".format(nameservice, pillar['hdfs']['pkgs_path']) -%}
-{% set filepath = "{0}/{1}".format(basepath, uri_basename) -%}
+{% set filepath = "{0}/{1}/{2}".format(basepath, app_name, uri_basename) -%}
 
 {{ app_name }}-app-uri-file-in-hdfs-{{ nameservice }}-{{ uri_basename }}:
   cmd.wait:
     - name: |
-        hadoop fs -mkdir -p {{ basepath }}
-        hadoop fs -chmod -R 1777 {{ basepath }}
-        hadoop fs -copyFromLocal -f {{ tmp_dir }}/{{ uri_basename  }} {{ filepath }}
+        hadoop fs -mkdir -p {{ basepath }}/{{ app_name }}
+        hadoop fs -chmod -R 1777 {{ basepath }}/{{ app_name }}
+        hadoop fs -copyFromLocal -f {{ tmp_dir }}/{{ app_name }}/{{ uri_basename  }} {{ filepath }}
         hadoop fs -chmod -R 1777 {{ filepath }}
     - user: hdfs
     - group: hdfs
@@ -42,7 +43,7 @@
 
 {% endfor %}
 
-{% do app_merged.update({'uris': salt['hdfs.map_uris'](uris)}) -%}
+{% do app_merged.update({'uris': salt['hdfs.map_uris'](app_name, uris)}) -%}
 
 app-config-file-{{ app_name }}:
   file.managed:
